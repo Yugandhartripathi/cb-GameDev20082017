@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+  <ul id="list">
+  </ul>
+  <script>
+    startTime = new Date().getTime();
+    list = document.getElementById("list");
+    allData = "";
+    for(i = 1; i < 1000; i++){
+      str = "";
+      if(i%3 == 0){
+        str += "FIZZ";
+      }
+      if(i%5 == 0){
+        str += "BUZZ";
+      }
+      if(str == ""){
+        str = i;
+      }
+      allData += "<li>"+str+"</li>";
+      // list.innerHTML += "<li>"+str+"</li>";
+    }
+    list.innerHTML = allData;
+    endTime = new Date().getTime();
+    console.log(endTime - startTime);
+  </script>
+</body>
+</html>
