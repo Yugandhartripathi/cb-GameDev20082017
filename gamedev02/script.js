@@ -3,16 +3,15 @@ window.onload = function(){
   var restart = document.getElementById("restart");
   var ctx = canvas.getContext('2d');
   const GAME_WIDTH = 800;
-  const GAME_HEIGHT = 600;
+  const GAME_HEIGHT = 590;
   canvas.height = GAME_HEIGHT;
   canvas.width = GAME_WIDTH;
-  ctx.fillStyle = "green"
 
   var isMoving = false;
 
   var game = {
     background: {
-      x: 0, y: 0, h: GAME_HEIGHT, w: GAME_WIDTH, imgSrc: "Assets/background.jpg", speedX: 0, speedY: 0
+      x: 0, y: 0, h: GAME_HEIGHT, w: GAME_WIDTH, imgSrc: "Assets/background.jpg", speedX: 0, speedY: 0, flipImgSrc: "Assets/background_flipped.jpg", renderCount: 1
     },
     player: {
       x: 100, y: GAME_HEIGHT/2 -75, h: 80, w: 80, imgSrc:"Assets/pika.png", speedX: 5, speedY: 0
@@ -65,13 +64,19 @@ window.onload = function(){
     return enemyCollision || enemy1Collision || enemy2Collision || goalCollision
   }
 
-  var updateObj = function(obj){
+  var updateObj = function(obj, isBg){
     obj.y += obj.speedY;
     if(obj.y > GAME_HEIGHT || obj.y < 0){
       obj.speedY *= -1;
     }
     if(isMoving){
       obj.x -= game.player.speedX;
+      if(isBg){
+        if(obj.w + obj.x < 0){
+          obj.x = 0;
+          obj.renderCount += 1;
+        }
+      }
     }
   }
 
@@ -79,6 +84,7 @@ window.onload = function(){
     if(checkCollisions()){
       game.over = true;
     } else {
+      updateObj(game.background, true);
       updateObj(game.enemy);
       updateObj(game.enemy1);
       updateObj(game.enemy2);
@@ -86,21 +92,45 @@ window.onload = function(){
     }
   }
 
-  var drawObj = function(ctx, obj){
+  var drawObj = function(obj){
     var image = new Image();
     image.src = obj.imgSrc;
     image.onload = function(){
-      ctx.drawImage(image, obj.x, obj.y, obj.w, obj.h);
+      ctx.drawImage(image, 0, 0, obj.w, obj.h, obj.x, obj.y, obj.w, obj.h);
+    }
+  }
+
+  var drawBg = function(obj){
+    var image1 = new Image();
+    var image2 = new Image();
+    var parWid;
+
+    if(obj.renderCount % 2 == 1){
+      image1.src = obj.imgSrc;
+      image2.src = obj.flipImgSrc;
+    } else {
+      image1.src = obj.flipImgSrc;
+      image2.src = obj.imgSrc;;
+    }
+    image1.onload = function(){
+      ctx.drawImage(image1, 0, 0, obj.w, obj.h, obj.x, obj.y, obj.w, obj.h);
+    }
+
+    image2.onload = function(){
+      parWid = -1 * obj.x || obj.x;
+      if(parWid > 0){
+        ctx.drawImage(image2, 0, 0, parWid, obj.h, obj.w - parWid, obj.y, parWid, obj.h);
+      }
     }
   }
 
   var draw = function(){
-    drawObj(ctx, game.background);
-    drawObj(ctx, game.player);
-    drawObj(ctx, game.enemy);
-    drawObj(ctx, game.enemy1);
-    drawObj(ctx, game.enemy2);
-    drawObj(ctx, game.goal);
+    drawBg(game.background);
+    drawObj(game.player);
+    drawObj(game.enemy);
+    drawObj(game.enemy1);
+    drawObj(game.enemy2);
+    drawObj(game.goal);
   }
 
   var render = function(){
